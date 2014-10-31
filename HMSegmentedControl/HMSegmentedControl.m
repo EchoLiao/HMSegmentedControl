@@ -214,6 +214,7 @@
     
     if (self.type == HMSegmentedControlTypeText) {
         [self.sectionTitles enumerateObjectsUsingBlock:^(id titleString, NSUInteger idx, BOOL *stop) {
+            titleString = [titleString stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
             CGFloat stringHeight = roundf([titleString sizeWithFont:self.font].height);
             CGFloat stringWidth = roundf([titleString sizeWithFont:self.font].width);
             
@@ -239,30 +240,27 @@
                 rectDiv = CGRectMake(xOffset-0.5, self.selectionIndicatorHeight*2, 1, self.frame.size.height-(self.selectionIndicatorHeight*4));
             }
             
-            CATextLayer *titleLayer = [CATextLayer layer];
-            titleLayer.frame = rect;
-            titleLayer.font = (__bridge CFTypeRef)(self.font.fontName);
-            titleLayer.fontSize = self.font.pointSize;
-            titleLayer.alignmentMode = kCAAlignmentCenter;
-            titleLayer.string = titleString;
-            titleLayer.truncationMode = kCATruncationEnd;
-            
+            UILabel *titleLbl = [[UILabel alloc] initWithFrame:CGRectOffset(rect, 10, -4)];
+            titleLbl.font = self.font;
+            titleLbl.textAlignment = NSTextAlignmentCenter;
+            titleLbl.text = titleString;
+            titleLbl.lineBreakMode = NSLineBreakByWordWrapping;
+            titleLbl.numberOfLines = 0;
+            [titleLbl sizeToFit];
+
             if (self.selectedSegmentIndex == idx) {
-                titleLayer.foregroundColor = self.selectedTextColor.CGColor;
+                titleLbl.textColor = self.selectedTextColor;
             } else {
-                titleLayer.foregroundColor = self.textColor.CGColor;
+                titleLbl.textColor = self.textColor;
             }
             
-            titleLayer.contentsScale = [[UIScreen mainScreen] scale];
-            
-            [self.scrollView.layer addSublayer:titleLayer];
-            
+            [self.scrollView addSubview:titleLbl];
+
             // Vertical Divider
             if ([self isShowVerticalDivider] && idx>0) {
                 CALayer *verticalDividerLayer = [CALayer layer];
                 verticalDividerLayer.frame = rectDiv;
                 verticalDividerLayer.backgroundColor = self.verticalDividerColor ? self.verticalDividerColor.CGColor : self.textColor.CGColor;
-                
                 [self.scrollView.layer addSublayer:verticalDividerLayer];
             }
         }];
@@ -330,14 +328,14 @@
             
             // The text rect's width is the segment width without the image, image padding and insets
             CGRect textRect = CGRectMake(textXOffset, yOffset, [[self.segmentWidthsArray objectAtIndex:idx] floatValue]-imageWidth-segmentImageTextPadding-self.segmentEdgeInset.left-self.segmentEdgeInset.right, stringHeight);
-            CATextLayer *titleLayer = [CATextLayer layer];
-            titleLayer.frame = textRect;
-            titleLayer.font = (__bridge CFTypeRef)(self.font.fontName);
-            titleLayer.fontSize = self.font.pointSize;
-            titleLayer.alignmentMode = kCAAlignmentCenter;
-            titleLayer.string = self.sectionTitles[idx];
-            titleLayer.truncationMode = kCATruncationEnd;
-			
+            UILabel *titleLbl = [[UILabel alloc] initWithFrame:CGRectOffset(rect, 10, -4)];
+            titleLbl.font = self.font;
+            titleLbl.textAlignment = NSTextAlignmentCenter;
+            titleLbl.text = [self.sectionTitles[idx] stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+            titleLbl.lineBreakMode = NSLineBreakByWordWrapping;
+            titleLbl.numberOfLines = 0;
+            [titleLbl sizeToFit];
+
             CALayer *imageLayer = [CALayer layer];
             imageLayer.frame = imageRect;
 			
@@ -348,16 +346,14 @@
                 } else {
                     imageLayer.contents = (id)icon.CGImage;
                 }
-				titleLayer.foregroundColor = self.selectedTextColor.CGColor;
+                titleLbl.textColor = self.selectedTextColor;
             } else {
                 imageLayer.contents = (id)icon.CGImage;
-				titleLayer.foregroundColor = self.textColor.CGColor;
+                titleLbl.textColor = self.textColor;
             }
             
             [self.scrollView.layer addSublayer:imageLayer];
-			titleLayer.contentsScale = [[UIScreen mainScreen] scale];
-            [self.scrollView.layer addSublayer:titleLayer];
-			
+            [self.scrollView.layer addSublayer:titleLbl.layer];
         }];
 	}
     

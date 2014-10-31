@@ -170,6 +170,9 @@ typedef enum {
  */
 @property (nonatomic) BOOL shouldAnimateUserSelection;
 
+@property (nonatomic, strong, readonly) CALayer *selectionIndicatorBoxLayer;
+
+
 - (id)initWithSectionTitles:(NSArray *)sectiontitles;
 - (id)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages;
 - (instancetype)initWithSectionImages:(NSArray *)sectionImages sectionSelectedImages:(NSArray *)sectionSelectedImages titlesForSections:(NSArray *)sectiontitles;

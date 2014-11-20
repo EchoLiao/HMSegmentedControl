@@ -239,8 +239,9 @@
                 rect = CGRectMake(xOffset, y, [[self.segmentWidthsArray objectAtIndex:idx] floatValue], stringHeight);
                 rectDiv = CGRectMake(xOffset-0.5, self.selectionIndicatorHeight*2, 1, self.frame.size.height-(self.selectionIndicatorHeight*4));
             }
-            
-            UILabel *titleLbl = [[UILabel alloc] initWithFrame:CGRectOffset(rect, 10, -4)];
+
+            CGRect fm = [titleString rangeOfString:@"\n"].length > 0 ? CGRectOffset(rect, 10, -4) : CGRectOffset(rect, 0, 3);
+            UILabel *titleLbl = [[UILabel alloc] initWithFrame:fm];
             titleLbl.font = self.font;
             titleLbl.textAlignment = NSTextAlignmentCenter;
             titleLbl.text = titleString;
@@ -328,10 +329,13 @@
             
             // The text rect's width is the segment width without the image, image padding and insets
             CGRect textRect = CGRectMake(textXOffset, yOffset, [[self.segmentWidthsArray objectAtIndex:idx] floatValue]-imageWidth-segmentImageTextPadding-self.segmentEdgeInset.left-self.segmentEdgeInset.right, stringHeight);
-            UILabel *titleLbl = [[UILabel alloc] initWithFrame:CGRectOffset(rect, 10, -4)];
+
+            NSString *titleString = [self.sectionTitles[idx] stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+            CGRect fm = [titleString rangeOfString:@"\n"].length > 0 ? CGRectOffset(rect, 10, -4) : CGRectOffset(rect, 0, 3);
+            UILabel *titleLbl = [[UILabel alloc] initWithFrame:fm];
             titleLbl.font = self.font;
             titleLbl.textAlignment = NSTextAlignmentCenter;
-            titleLbl.text = [self.sectionTitles[idx] stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+            titleLbl.text = titleString;
             titleLbl.lineBreakMode = NSLineBreakByWordWrapping;
             titleLbl.numberOfLines = 0;
             [titleLbl sizeToFit];

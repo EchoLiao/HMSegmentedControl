@@ -23,6 +23,7 @@
 @property (nonatomic, readwrite) CGFloat segmentWidth;
 @property (nonatomic, readwrite) NSArray *segmentWidthsArray;
 @property (nonatomic, strong) HMScrollView *scrollView;
+@property (nonatomic, assign) CGFloat offsetPercent;
 
 @end
 
@@ -370,11 +371,11 @@
             }
         } else {
             if (!self.selectionIndicatorStripLayer.superlayer) {
-                self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicator];
+                self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicatorWithOffset];
                 [self.scrollView.layer addSublayer:self.selectionIndicatorStripLayer];
-                
+
                 if (self.selectionStyle == HMSegmentedControlSelectionStyleBox && !self.selectionIndicatorBoxLayer.superlayer) {
-                    self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
+                    self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicatorWithOffset];
                     [self.scrollView.layer insertSublayer:self.selectionIndicatorBoxLayer atIndex:0];
                 }
             }
@@ -383,7 +384,7 @@
 }
 
 - (void)setArrowFrame {
-    self.selectionIndicatorArrowLayer.frame = [self frameForSelectionIndicator];
+    self.selectionIndicatorArrowLayer.frame = [self frameForSelectionIndicatorWithOffset];
     
     self.selectionIndicatorArrowLayer.mask = nil;
     
@@ -693,6 +694,7 @@
 }
 
 - (void)setSelectedSegmentIndex:(NSUInteger)index animated:(BOOL)animated notify:(BOOL)notify {
+    self.offsetPercent = 0.0;
     _selectedSegmentIndex = index;
     [self setNeedsDisplay];
     
@@ -739,9 +741,9 @@
             [CATransaction setAnimationDuration:0.15f];
             [CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]];
             [self setArrowFrame];
-            self.selectionIndicatorBoxLayer.frame = [self frameForSelectionIndicator];
-            self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicator];
-            self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
+            self.selectionIndicatorBoxLayer.frame = [self frameForSelectionIndicatorWithOffset];
+            self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicatorWithOffset];
+            self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicatorWithOffset];
             [CATransaction commit];
         } else {
             // Disable CALayer animations
@@ -750,14 +752,36 @@
             [self setArrowFrame];
             
             self.selectionIndicatorStripLayer.actions = newActions;
-            self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicator];
-            
+            self.selectionIndicatorStripLayer.frame = [self frameForSelectionIndicatorWithOffset];
+
             self.selectionIndicatorBoxLayer.actions = newActions;
-            self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicator];
+            self.selectionIndicatorBoxLayer.frame = [self frameForFillerSelectionIndicatorWithOffset];
             
             if (notify)
                 [self notifyForSegmentChangeToIndex:index];
         }
+    }
+}
+
+- (CGRect)frameForFillerSelectionIndicatorWithOffset
+{
+    CGRect frame = [self frameForFillerSelectionIndicator];
+    frame.origin.x += frame.size.width * self.offsetPercent;
+    return frame;
+}
+
+- (CGRect)frameForSelectionIndicatorWithOffset
+{
+    CGRect frame = [self frameForSelectionIndicator];
+    frame.origin.x += frame.size.width * self.offsetPercent;
+    return frame;
+}
+
+- (void)drawSelectionIndicatorByOffsetPercent:(CGFloat)percent
+{
+    if (percent > -1.0 && percent < 1.0) {
+        self.offsetPercent = percent;
+        [self setNeedsDisplay];
     }
 }
 
